@@ -1,0 +1,66 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 90vw;
+  place-items: center, center;
+}
+
+.container {
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  place-items: center;
+  min-width: 90vh;
+  min-height: 90vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer {
+  position:absolute;
+  top: 97vh;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  min-height: 20px;
+  min-width: 98vw;
+}
+
+.footer-item {
+  padding-left: 4px;
+}
+
+.footer-text {
+  font-size: 5pt;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+.logo {
+  height: 1em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
