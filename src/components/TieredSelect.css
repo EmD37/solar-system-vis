@@ -40,3 +40,45 @@
 li:hover>li, li:focus>li {
     background-color: #5956562e;
 }
+.property-container {
+    display: grid;
+    align-items: center;
+    min-width: 14em;
+    padding-left: 1.5em;
+}
+
+.property-label {
+    min-width: 10em
+}
+
+.tiered-select-container {
+    overflow: hidden;
+    width: 80%;
+    height: 20em;
+    border: 1px solid;
+    border-color: rgba(240, 248, 255, 0.279);
+}
+
+.tiered-select-container:hover {
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.tiered-select-item {
+    display: block;
+    width: 100%;
+}
+
+.tiered-select-item:hover, .tiered-select-item:focus {
+    background-color: #5956562e;
+    cursor: default;
+}
+
+.tiered-select-list {
+    list-style-type: none;
+    padding-inline-start: 1.5em;
+}
+
+li:hover>li, li:focus>li {
+    background-color: #5956562e;
+}
