@@ -1,6 +1,6 @@
 import './TieredSelect.css';
 import { useState } from "react";
-import * as treeUtils from '../treeUtils.js'
+import * as treeUtils from '../scripts/treeUtils.js'
 
 //Components
 function Tier ({ items, onClick }) {

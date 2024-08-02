@@ -4,84 +4,124 @@ import Footer from './components/Footer';
 import AdvancedSearch from './components/AdvancedSearch';
 import Modal from './components/Modal';
 import RenderArea from './components/RenderArea';
+import SettingsProvider from './context/SettingsProvider';
 
 //Import Helpers and Style
-import getDefault from './default_test';
-import * as fetching from './fetching';
+import { buildRequest, flattenSettings, compareFlattened } from './scripts/fetching';
+import * as ACTIONS from './context/settings_actions';
 import './App.css';
 
-//Import Libs
-import { useState, useEffect } from 'react';
+//Import Hooks
+import { useState, useEffect} from 'react';
+import { useSettings, useSettingsDispatch } from './context/SettingsProvider';
 
 function App() {
-  const data = getDefault();
+  const baseURL = "";
 
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [flatData, setFlatData] = useState({});
-  const [renderData, setRenderData] = useState(data.render);
-  const [startDate, setStartDate] = useState(data.Settings.StartDate)
-  const [endDate, setEndDate] = useState(data.Settings.EndDate)
+  const [renderData, setRenderData] = useState();
+  const settings = useSettings();
+  const dispatch = useSettingsDispatch();
 
   useEffect(() => {
-    const url = "";
-
     const fetchData = async () => {
         try {
-            const response = await fetch(url);
+            const response = await fetch(baseURL);
             const json = await response.json();
-            console.log(json.slip.advice);
+            
+            setFlatData(flattenSettings(json.data.settings));
+            setRenderData(JSON.parse(json.data.renderData));
+            dispatch({
+              type: ACTIONS.SETTINGS,
+              StartDate: json.data.settings.startDate,
+              EndDate: json.data.settings.endDate,
+              MajorBodies: json.data.settings.majorBodies,
+              MinorBodies: json.data.settings.minorBodies,
+              Missions: json.data.settings.missions
+            });
         } catch (error) {
-            console.log("error", error);
+            alert("There was an error loading the page");
+            console.log("Error - Initial Load", error);
         }
     };
 
     fetchData();
-  }, [flatData]);
+  }, [dispatch]);
 
+  function handleRenderRequest(e) {
+    const newFlattened = flattenSettings(settings, e.target.name);
+
+    if (!compareFlattened(newFlattened, flatData))
+      return;
+
+    const requestBody = buildRequest(newFlattened);
+
+  }
 
   function handleModalButtonClick() {
     setShowAdvancedSearch(!showAdvancedSearch);
   }
 
-  function handleChangeStartDate(e) {
-    setStartDate(e.target.value);
-  }
+  function handlePresetRequest(e) {
+    let dynamicURL = baseURL;
+    switch (e.target.name) {
+      case "Preset1":
+        dynamicURL += "preset/1";
+        break;
+      case "Preset2":
+        dynamicURL += "preset/2";
+        break;
+      case "Preset3":
+        dynamicURL += "preset/3";
+        break;
+      default:
+        break;
+    }
 
-  function handleChangeEndDate(e) {
-    setEndDate(e.target.value);
-  }
+    const fetchData = async () => {
+      try {
+          const response = await fetch(dynamicURL);
+          const json = await response.json();
+            
+          setFlatData(flattenSettings(json.data.settings));
+          setRenderData(JSON.parse(json.data.renderData));
+          dispatch({
+            type: ACTIONS.SETTINGS,
+            StartDate: json.data.settings.startDate,
+            EndDate: json.data.settings.endDate,
+            MajorBodies: json.data.settings.majorBodies,
+            MinorBodies: json.data.settings.minorBodies,
+            Missions: json.data.settings.missions
+          });
+      } catch (error) {
+          alert("There was an error retrieving the selected preset");
+          console.log("Error - Preset - ", error);
+      }
+    };
 
-  function handleRenderRequest(e) {
-
+    fetchData();
+    setFlatData();
+    setRenderData();
   }
 
   return (
-    <>
+    <SettingsProvider>
       {showAdvancedSearch && 
       <Modal isOpen={showAdvancedSearch} onClose={() => setShowAdvancedSearch(false)}>
-        <AdvancedSearch 
-          startDate={startDate} updateStartDate={handleChangeStartDate}
-          endDate={endDate}  updateEndDate={handleChangeEndDate}
-          initialMinorBodies={data.Settings.MinorBodies} 
-          intialMajorBodies={data.Settings.MajorBodies} 
-          initialMissions={data.Settings.Missions}
-          requestNewRender={handleRenderRequest}
-        />
+        <AdvancedSearch requestNewRender={handleRenderRequest} />
       </Modal>
       }
       <div className='container'>
         <Navbar 
           openAdvancedSelection={handleModalButtonClick}
-          searchOpen={showAdvancedSearch} 
-          startDate={startDate}
-          endDate={endDate}
-          modifyStartDate={handleChangeStartDate} 
-          modifyEndDate={handleChangeEndDate}
+          searchOpen={showAdvancedSearch}
+          onPresetClick={handlePresetRequest}
         />
         <RenderArea renderItem={renderData}/>
       </div>
       < Footer />
-    </>
+    </ SettingsProvider>
   )
 }
 

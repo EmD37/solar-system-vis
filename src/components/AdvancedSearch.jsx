@@ -1,63 +1,51 @@
-//import { useState, useEffect, useReducer } from 'react';
-import { useState } from 'react';
 import './AdvancedSearch.css';
 import TieredSelect from './TieredSelect';
+import { useSettings, useSettingsDispatch } from '../context/SettingsProvider';
+import * as ACTIONS from '../context/settings_actions';
 
 
 //Helper Functions
-function flattenItems(list, flattened = []) {
-    
-    for (const item of list) {
-        if (item.children.length === 0) {     
-            flattened.push({
-                id: item.id,
-                name: item.name,
-                show: item.show,
-                orbit: item.orbit
-            });
-        }
-
-        if (item.children.length !== 0) {
-            flattened = flattenItems(item.children, flattened);
-        }
-    }
-    return flattened;
-}
 
 
 //Components
-export default function AdvancedSearch ({ startDate, updateStartDate, endDate, updateEndDate, initialMinorBodies, intialMajorBodies, initialMissions, requestNewRender }) {
-    const [majorBodies, setMajorBodies] = useState(intialMajorBodies);
-    const [minorBodies, setMinorBodies] = useState(initialMinorBodies);
-    const [missions, setMissions] = useState(initialMissions);
-    
+export default function AdvancedSearch ({ requestNewRender }) {
+
+    const settings = useSettings();
+    const dispatch = useSettingsDispatch();
+
+    function handleChangeStartDate(e) {
+        dispatch({
+            type: ACTIONS.START_DATE,
+            StartDate: e.target.value
+        });
+    }
+
+    function handleChangeEndDate(e) {
+        dispatch({
+            type: ACTIONS.END_DATE_DATE,
+            EndDate: e.target.value
+        });
+    }
 
     function handleUpdateMajorBodies(list) {
-        setMajorBodies(list);
+        dispatch({
+            type: ACTIONS.MAJOR_BODIES,
+            MajorBodies: list           
+        });
     }
 
     function handleUpdateMinorBodies(list) {
-        setMinorBodies(list);
+        dispatch({
+            type: ACTIONS.MINOR_BODIES,
+            MinorBodies: list           
+        });
     }
 
     function handleUpdateMissions(list) {
-        setMissions(list);
-    }
-
-    function handleRenderRequest() {
-        let flat = flattenItems(majorBodies);
-        flat = flattenItems(minorBodies, flat);
-        flat = flattenItems(missions, flat);
-
-        requestNewRender(flat);
-    }
-
-    function handleExportRequest() {
-        let flat = flattenItems(majorBodies);
-        flat = flattenItems(minorBodies, flat);
-        flat = flattenItems(missions, flat);
-
-        requestNewRender(flat);
+        dispatch({
+            type: ACTIONS.MISSIONS,
+            Missions: list           
+        });
     }
 
     return (
@@ -66,28 +54,28 @@ export default function AdvancedSearch ({ startDate, updateStartDate, endDate, u
             <div className='search-grid'>
                 <div className='search-grid-row'>
                     <label className='search-grid-cell'>
-                        Start Date: <input name='startDate' value={startDate} onChange={updateStartDate} type='date'/>
+                        Start Date: <input name='startDate' value={settings.StartDate} onChange={handleChangeStartDate} type='date'/>
                     </label>
                     <label className='search-grid-cell'>
-                        End Date: <input name='endDate' value={endDate} onChange={updateEndDate} type='date'/>
+                        End Date: <input name='endDate' value={settings.EndDate} onChange={handleChangeEndDate} type='date'/>
                     </label>
                     <div className='search-grid-cell'>
-                        <button className='search-button' type='button' onClick={handleRenderRequest} name='render'>Render</button>
-                        <button className='search-button' type='button' onClick={handleExportRequest} name='export'>Export</button>
+                        <button className='search-button' type='button' onClick={requestNewRender} name='render'>Render</button>
+                        <button className='search-button' type='button' onClick={requestNewRender} name='export'>Export</button>
                     </div>
                 </div>
                 <div className="search-grid-row">
                     <div className="search-grid-column">
                         <h3 style={{marginTop: 0, marginBottom: '0.5em', textAlign: 'center'}}>Planets</h3>
-                        <TieredSelect listObject={majorBodies} setlistObject={handleUpdateMajorBodies} />
+                        <TieredSelect listObject={settings.MajorBodies} setlistObject={handleUpdateMajorBodies} />
                     </div>
                     <div className="search-grid-column">
                         <h3 style={{marginTop: 0, marginBottom: '0.5em', textAlign: 'center'}}>Minor Bodies</h3>
-                        <TieredSelect listObject={minorBodies} setlistObject={handleUpdateMinorBodies}/>
+                        <TieredSelect listObject={settings.MinorBodies} setlistObject={handleUpdateMinorBodies}/>
                     </div>
                     <div className="search-grid-column">
                         <h3 style={{marginTop: 0, marginBottom: '0.5em', textAlign: 'center'}}>Missions</h3>
-                        <TieredSelect listObject={missions} setlistObject={handleUpdateMissions} />
+                        <TieredSelect listObject={settings.Missions} setlistObject={handleUpdateMissions} />
                     </div>
                 </div>
             </div>

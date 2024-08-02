@@ -1,4 +1,4 @@
-import data from './assets/fig.json'
+import data from '../assets/fig.json'
 
 const settings = {
 	Settings: {
