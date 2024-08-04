@@ -1,11 +1,50 @@
-import { createContext, useReducer, useContext } from "react"
+import { createContext, useReducer, useContext, useEffect, useState } from "react"
 import * as ACTIONS from './settings_actions';
+import { flattenSettings, BASE_URL } from "../scripts/fetchingUtils";
 
 const SettingsContext = createContext(null);
 const SettingsDispatchContext = createContext(null);
 
-export default function SettingsProvider({children, initialSettings}) {
-  const [settings, dispatch] = useReducer(settingsReducer, initialSettings);
+export default function SettingsProvider({children, handleRender, handleFlat}) {
+  const [settings, dispatch] = useReducer(settingsReducer, {});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const response = await fetch(BASE_URL);
+            const json = await response.json();
+            
+            handleFlat(flattenSettings(json.data.settings, "render"));
+            handleRender(JSON.parse(json.data.renderData));
+            dispatch({
+              type: ACTIONS.SETTINGS,
+              startDate: json.data.settings.startDate,
+              endDate: json.data.settings.endDate,
+              majorBodies: json.data.settings.majorBodies,
+              minorBodies: json.data.settings.minorBodies,
+              missions: json.data.settings.missions
+            });
+        } catch (error) {
+            alert("There was an error loading the page");
+            console.log("Error - Initial Load", error);
+            setError(error);
+        } finally {
+          setLoading(false);
+        }
+    };
+
+    fetchData();
+  }, [handleFlat, handleRender]);
+
+  if (loading) {
+    return <div>Loading settings...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return(
     <SettingsContext.Provider value={settings}>
@@ -28,39 +67,39 @@ function settingsReducer(settings, action) {
     switch (action.type) {
       case ACTIONS.SETTINGS:
         return {
-          StartDate: action.StartDate,
-          EndDate: action.EndDate,
-          MajorBodies: action.MajorBodies,
-          MinorBodies: action.MinorBodies,
-          Missions: action.Missions
+            startDate: action.StartDate,
+            endDate: action.EndDate,
+            majorBodies: action.MajorBodies,
+            minorBodies: action.MinorBodies,
+            missions: action.Missions
         }
       case ACTIONS.START_DATE:
         return {
           ...settings,
-          StartDate: action.StartDate
+          startDate: action.StartDate
         }
       case ACTIONS.END_DATE:
         return {
           ...settings,
-          EndDate: action.EndDate
+          endDate: action.EndDate
         }
       case ACTIONS.MINOR_BODIES:
         return {
           ...settings,
-          MinorBodies: action.MinorBodies
+          minorBodies: action.MinorBodies
         }
       case ACTIONS.MAJOR_BODIES:
         return {
           ...settings,
-          MajorBodies: action.MajorBodies
+          majorBodies: action.MajorBodies
         }
       case ACTIONS.MISSIONS:
         return {
           ...settings,
-          Missions: action.Missions
+          missions: action.Missions
         }
       default:
-        return;
+        return settings;
     }
   }
 
